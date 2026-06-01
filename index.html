@@ -1777,15 +1777,12 @@ function sendToSheets(perfil) {
     return;
   }
 
-  fetch(CONFIG.APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors', // Apps Script exige no-cors
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }).catch(() => {
-    // Silencioso — não bloqueia o fluxo do usuário
-    console.warn('[Quiz] Falha ao enviar para o Sheets. Verifique a URL do Apps Script.');
-  });
+  // Envia via GET com dados codificados na URL (mais confiável com Apps Script)
+  const url = CONFIG.APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  fetch(url, { method: 'GET', mode: 'no-cors' })
+    .catch(() => {
+      console.warn('[Quiz] Falha ao enviar para o Sheets. Verifique a URL do Apps Script.');
+    });
 }
 
 /* ════════════════════════════════════════════════════

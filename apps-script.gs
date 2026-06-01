@@ -95,6 +95,25 @@ function doPost(e) {
  * Requisições GET (teste manual via navegador).
  */
 function doGet(e) {
+  // Recebe dados enviados via GET com parâmetro ?data=...
+  if (e && e.parameter && e.parameter.data) {
+    try {
+      var data  = JSON.parse(e.parameter.data);
+      var ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+      var sheet = getOrCreateSheet(ss);
+      if (sheet.getLastRow() === 0) { sheet.appendRow(HEADERS); formatHeaders(sheet); }
+      sheet.appendRow([
+        data.timestamp||'', data.nome||'—', data.telefone||'—', data.perfil||'—',
+        (data.respostas||{})['pergunta_1']||'—', (data.respostas||{})['pergunta_2']||'—',
+        (data.respostas||{})['pergunta_3']||'—', (data.respostas||{})['pergunta_4']||'—',
+        (data.respostas||{})['pergunta_5']||'—', (data.respostas||{})['pergunta_6']||'—',
+        (data.respostas||{})['pergunta_7']||'—', (data.respostas||{})['pergunta_8']||'—',
+      ]);
+      return buildResponse({ status: 'ok' });
+    } catch(err) {
+      return buildResponse({ status: 'error', message: err.toString() });
+    }
+  }
   return buildResponse({ status: 'ok', message: 'Quiz Capilar — Apps Script ativo.' });
 }
 
