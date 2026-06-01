@@ -17,7 +17,7 @@
  */
 
 // ⚠️ SUBSTITUA pelo ID da sua planilha Google Sheets
-var SPREADSHEET_ID = 'SEU_SPREADSHEET_ID';
+var SPREADSHEET_ID = '1TSwlDSk9s5nA9WKAUCtHsscBI9RdljwxcX_wVkMuoWY';
 
 // Nome da aba onde os leads serão registrados
 var SHEET_NAME = 'Leads Quiz Capilar';
