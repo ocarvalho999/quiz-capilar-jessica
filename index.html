@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  QUIZ CAPILAR — Jessica Mayara | Biomédica Tricologista          ║
+  ║  INSTRUÇÕES DE DEPLOY:                                           ║
+  ║                                                                  ║
+  ║  PASSO 1: Preencha as variáveis CONFIG no início do <script>     ║
+  ║  PASSO 2: No Google Apps Script (script.google.com):             ║
+  ║    - Crie novo projeto e cole o conteúdo de apps-script.gs       ║
+  ║    - Substitua SEU_SPREADSHEET_ID pelo ID da sua planilha        ║
+  ║    - Implantação > Nova implantação > Web App                    ║
+  ║    - Executar como: Eu mesmo | Acesso: Qualquer pessoa           ║
+  ║    - Copie a URL gerada e cole em APPS_SCRIPT_URL abaixo         ║
+  ║  PASSO 3: Coloque jessica.jpg no mesmo diretório do index.html   ║
+  ║  PASSO 4: Para as imagens dos estágios de calvície (Q2),         ║
+  ║    coloque os arquivos: calvicie-1.jpg até calvicie-7.jpg        ║
+  ║    no mesmo diretório.                                           ║
+  ║  PASSO 5: Deploy na Vercel, Netlify ou GitHub Pages              ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico Capilar Gratuito | Jessica Mayara Tricologista</title>
+<meta name="description" content="Descubra o tratamento ideal para sua queda de cabelo. Diagnóstico gratuito com a Biomédica Tricologista Jessica Mayara.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ─── VARIÁVEIS DE DESIGN ───────────────────────────── */
+:root {
+  --primary:       #AF9886;
+  --primary-dark:  #8a7265;
+  --primary-light: #d4c4b8;
+  --primary-xlight:#f5eeea;
+  --bg:            #faf8f6;
+  --bg-card:       #ffffff;
+  --text-dark:     #1a1410;
+  --text-mid:      #4a3f38;
+  --text-soft:     #8a7a72;
+  --border:        #e8ddd8;
+  --success:       #5a8f6a;
+  --gold:          #c9a96e;
+  --radius:        16px;
+  --radius-sm:     10px;
+  --shadow:        0 4px 32px rgba(175,152,134,0.15);
+  --shadow-card:   0 2px 16px rgba(175,152,134,0.12);
+  --transition:    0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── RESET & BASE ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ─── FUNDO COM TEXTURA ─────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(175,152,134,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 90%, rgba(201,169,110,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── WRAPPER PRINCIPAL ─────────────────────────────── */
+#app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 40px;
+}
+
+/* ─── TELAS (screens) ───────────────────────────────── */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  animation: fadeIn 0.45s var(--transition) both;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── CABEÇALHO DA MARCA ────────────────────────────── */
+.brand-header {
+  text-align: center;
+  padding: 32px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+.brand-tagline {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ─── TELA 0 — INTRO ────────────────────────────────── */
+#screen-intro {
+  background: var(--bg-card);
+}
+
+.intro-hero {
+  padding: 36px 28px 0;
+  text-align: center;
+}
+
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+.avatar-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--primary), var(--gold));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-img {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--primary-xlight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.avatar-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+/* Placeholder quando não há foto */
+.avatar-placeholder {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--primary-xlight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+.avatar-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  background: var(--success);
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: white;
+  font-weight: 700;
+}
+
+.intro-greeting {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+.intro-greeting em {
+  color: var(--primary-dark);
+  font-style: normal;
+}
+.intro-desc {
+  font-size: 0.92rem;
+  color: var(--text-mid);
+  line-height: 1.65;
+  margin-bottom: 8px;
+  padding: 0 8px;
+}
+.intro-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-xlight);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  color: var(--primary-dark);
+  font-weight: 500;
+  margin-bottom: 28px;
+}
+
+/* Benefícios */
+.intro-benefits {
+  padding: 0 28px;
+  margin-bottom: 24px;
+}
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+  color: var(--text-mid);
+}
+.benefit-item:last-child { border-bottom: none; }
+.benefit-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--primary-xlight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+/* CTA */
+.cta-section {
+  padding: 0 28px 28px;
+}
+.btn-cta {
+  width: 100%;
+  padding: 17px 24px;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 6px 24px rgba(138,114,101,0.35);
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+.btn-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(138,114,101,0.4); }
+.btn-cta:hover::after { opacity: 1; }
+.btn-cta:active { transform: translateY(0); }
+
+/* Prova social */
+.social-proof {
+  margin: 16px 28px 0;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--primary-xlight), #fff);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.proof-stars { font-size: 0.85rem; letter-spacing: 1px; }
+.proof-text { font-size: 0.8rem; color: var(--text-mid); font-weight: 500; line-height: 1.4; }
+.proof-text strong { color: var(--primary-dark); }
+
+/* ─── TELAS DE PERGUNTAS ────────────────────────────── */
+#screen-quiz {
+  background: var(--bg);
+  padding-bottom: 0;
+}
+
+/* Barra de progresso */
+.progress-bar-wrap {
+  height: 4px;
+  background: var(--border);
+  width: 100%;
+  position: relative;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-dark), var(--gold));
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px rgba(201,169,110,0.6);
+}
+
+.progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px 0;
+}
+.progress-label {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.progress-pct {
+  font-size: 0.78rem;
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+/* Container da pergunta */
+.question-container {
+  padding: 20px 20px 0;
+  flex: 1;
+}
+
+.question-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  display: block;
+}
+.question-category {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.question-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+.question-hint {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+/* Cards de opção */
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 20px;
+}
+.options-grid.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.option-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.option-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  transform: scaleY(0);
+  transition: transform 0.2s;
+  border-radius: 0 2px 2px 0;
+}
+.option-card:hover {
+  border-color: var(--primary-light);
+  background: var(--primary-xlight);
+  transform: translateX(2px);
+}
+.option-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-xlight);
+  box-shadow: 0 0 0 3px rgba(175,152,134,0.15);
+}
+.option-card.selected::before { transform: scaleY(1); }
+
+.option-emoji {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--bg);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.option-card.selected .option-emoji {
+  background: white;
+}
+
+/* Card com imagem (Q2 — escalas de calvície) */
+.option-card.has-img {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+  gap: 6px;
+}
+.option-img-wrap {
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--primary-xlight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.option-img-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+.option-img-placeholder {
+  font-size: 0.65rem;
+  color: var(--text-soft);
+  text-align: center;
+  padding: 4px;
+}
+
+.option-text-wrap { flex: 1; }
+.option-letter {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.option-text {
+  font-size: 0.87rem;
+  color: var(--text-dark);
+  line-height: 1.4;
+  font-weight: 400;
+}
+.option-card.selected .option-text { font-weight: 500; }
+.option-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  margin-left: auto;
+}
+.option-card.selected .option-check {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+}
+
+/* Multi-select badge */
+.multi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-xlight);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  color: var(--primary-dark);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+/* Rodapé do quiz */
+.quiz-footer {
+  padding: 14px 20px 24px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+}
+.btn-next {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-next:disabled {
+  background: var(--border);
+  color: var(--text-soft);
+  cursor: not-allowed;
+}
+.btn-next:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white;
+  box-shadow: 0 4px 16px rgba(138,114,101,0.3);
+}
+.btn-next:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(138,114,101,0.4);
+}
+.btn-next:not(:disabled):active { transform: translateY(0); }
+
+/* ─── TELA DE LOADING ───────────────────────────────── */
+#screen-loading {
+  background: var(--bg-card);
+  align-items: center;
+  justify-content: center;
+  padding: 60px 32px;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.loading-spinner {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 28px;
+  position: relative;
+}
+.loading-spinner::before, .loading-spinner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+.loading-spinner::before {
+  border-top-color: var(--primary);
+  border-right-color: var(--primary-light);
+  animation: spin 1s linear infinite;
+}
+.loading-spinner::after {
+  border-bottom-color: var(--gold);
+  border-left-color: transparent;
+  animation: spin 0.6s linear infinite reverse;
+  inset: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.loading-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+.loading-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+.loading-steps {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.loading-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.loading-step.visible { opacity: 1; }
+.loading-step.done { color: var(--success); }
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.loading-step.visible .step-dot { background: var(--primary); }
+.loading-step.done .step-dot { background: var(--success); }
+
+/* ─── TELA DE RESULTADO ─────────────────────────────── */
+#screen-result {
+  background: var(--bg);
+}
+
+.result-header {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--gold) 100%);
+  padding: 32px 24px 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.result-header::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+}
+.result-header::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -30px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+
+.result-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.6);
+  margin: 0 auto 14px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  position: relative;
+  z-index: 1;
+}
+.result-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+.result-profile-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+.result-quote {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.55;
+  position: relative;
+  z-index: 1;
+  padding: 0 8px;
+}
+
+/* Resumo de respostas */
+.result-body {
+  padding: 20px 20px 0;
+}
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-soft);
+  margin-bottom: 12px;
+}
+.answers-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.answer-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: fadeIn 0.4s ease both;
+}
+.answer-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.answer-content { flex: 1; }
+.answer-q {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+.answer-a {
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* CTA final */
+.result-cta {
+  padding: 0 20px 36px;
+}
+.urgency-strip {
+  background: linear-gradient(135deg, #fff8f0, #fff3e8);
+  border: 1px solid #f0d9c0;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.urgency-icon { font-size: 1.1rem; flex-shrink: 0; }
+.urgency-text {
+  font-size: 0.95rem;
+  color: #8b5e3c;
+  line-height: 1.55;
+  font-weight: 500;
+}
+.urgency-text strong { color: #6b4020; font-size: 1rem; }
+
+/* Antes e depois */
+.before-after-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: center;
+  margin-bottom: 14px;
+  line-height: 1.35;
+}
+.before-after-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.before-after-card {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+.before-after-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.before-after-placeholder {
+  width: 100%;
+  height: 180px;
+  background: var(--primary-xlight);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+.before-after-placeholder span { font-size: 1.8rem; }
+
+.btn-whatsapp {
+  width: 100%;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #1a7a45, #25a65a);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 24px rgba(37,166,90,0.35);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+.btn-whatsapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(37,166,90,0.45);
+}
+.btn-whatsapp:active { transform: translateY(0); }
+.btn-whatsapp svg { flex-shrink: 0; }
+
+.result-footnote {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+.result-footnote strong { color: var(--primary-dark); }
+
+/* Barra de progresso da tela de resultado */
+.result-progress-bar {
+  padding: 12px 20px 0;
+  margin-bottom: 4px;
+}
+.result-progress-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.result-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--primary-dark), var(--gold));
+  border-radius: 3px;
+  animation: fillBar 1.5s 0.5s ease both;
+}
+@keyframes fillBar {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* ─── RODAPÉ GLOBAL ─────────────────────────────────── */
+.global-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.7rem;
+  color: var(--text-soft);
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+/* ─── TELA DE DADOS DO LEAD ────────────────────────── */
+#screen-form {
+  background: var(--bg-card);
+}
+.form-body {
+  padding: 32px 28px;
+  flex: 1;
+}
+.form-intro-avatar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.form-avatar-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-light);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.form-balloon {
+  background: var(--primary-xlight);
+  border: 1px solid var(--border);
+  border-radius: 0 12px 12px 12px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  line-height: 1.5;
+  position: relative;
+}
+.form-balloon::before {
+  content: '';
+  position: absolute;
+  left: -8px; top: 12px;
+  border: 8px solid transparent;
+  border-right-color: var(--border);
+  border-left: 0;
+}
+.form-balloon::after {
+  content: '';
+  position: absolute;
+  left: -6px; top: 13px;
+  border: 7px solid transparent;
+  border-right-color: var(--primary-xlight);
+  border-left: 0;
+}
+.form-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+.form-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+.form-group {
+  margin-bottom: 18px;
+}
+.form-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 7px;
+}
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  background: var(--bg);
+  transition: var(--transition);
+  outline: none;
+  -webkit-appearance: none;
+}
+.form-input::placeholder { color: var(--text-soft); }
+.form-input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(175,152,134,0.15);
+}
+.form-input.error {
+  border-color: #c0392b;
+  background: #fff8f8;
+}
+.form-error-msg {
+  font-size: 0.75rem;
+  color: #c0392b;
+  margin-top: 5px;
+  display: none;
+}
+.form-error-msg.visible { display: block; }
+.form-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.form-privacy-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── UTILITÁRIOS ───────────────────────────────────── */
+.hidden { display: none !important; }
+.mt-auto { margin-top: auto; }
+
+/* ─── RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 380px) {
+  .question-text { font-size: 1.25rem; }
+  .intro-greeting { font-size: 1.5rem; }
+  .options-grid.two-col { grid-template-columns: 1fr; }
+}
+@media (min-width: 481px) {
+  #app { margin: 20px auto; min-height: auto; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); }
+  body { align-items: center; padding: 20px; background: #ede6e0; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TELA 0 — INTRODUÇÃO                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="screen-intro" class="screen active">
+
+    <div class="brand-header">
+      <div class="brand-name">Jessica Mayara</div>
+      <div class="brand-tagline">Biomédica Tricologista · Brasília, DF</div>
+    </div>
+
+    <div class="intro-hero">
+      <div class="avatar-wrapper">
+        <div class="avatar-ring">
+          <div class="avatar-img">
+            <!-- ⚠️ COLOQUE jessica.jpg no mesmo diretório do index.html -->
+            <img src="jessica.jpg" alt="Jessica Mayara" onerror="this.parentElement.innerHTML='<div class=\'avatar-placeholder\'>👩‍⚕️</div>'">
+          </div>
+        </div>
+        <div class="avatar-badge">✓</div>
+      </div>
+
+      <h1 class="intro-greeting">
+        Oi! Sou a <em>Jéssica.</em><br>
+        Vou descobrir o protocolo ideal para você 🎯
+      </h1>
+      <p class="intro-desc">
+        Responda <strong>8 perguntinhas rápidas</strong> sobre sua queda de cabelo e eu te envio um diagnóstico personalizado <strong>exclusivo para a sua saúde capilar atual!</strong>
+      </p>
+      <div class="intro-time">
+        ⏱ Leva apenas 2 minutinhos
+      </div>
+    </div>
+
+    <div class="intro-benefits">
+      <div class="benefit-item">
+        <div class="benefit-icon">🔬</div>
+        <span>Análise do seu <strong>estágio atual</strong> de queda</span>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">💊</div>
+        <span>Protocolo de tratamento <strong>personalizado</strong></span>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">📋</div>
+        <span>Orientação direta com a biomédica</span>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <button class="btn-cta" onclick="startQuiz()">
+        Quero meu diagnóstico preciso →
+      </button>
+
+      <div class="social-proof">
+        <div>
+          <div class="proof-stars">⭐⭐⭐⭐⭐</div>
+          <div style="font-size:0.65rem;color:var(--text-soft);margin-top:2px;">Vickcare · Águas Claras</div>
+        </div>
+        <div class="proof-text">
+          <strong>+500 homens</strong> com a autoestima recuperada através da mesoterapia capilar
+        </div>
+      </div>
+    </div>
+
+    <div class="global-footer">
+      Especialista em Saúde Capilar – Queda de cabelo<br>
+      Clínica Vickcare · Águas Claras, Brasília - DF
+    </div>
+
+  </div><!-- /screen-intro -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TELA DADOS DO LEAD                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="screen-form" class="screen">
+
+    <div class="brand-header" style="padding:16px 24px 12px;">
+      <div class="brand-name" style="font-size:1.1rem;">Jessica Mayara</div>
+      <div class="brand-tagline">Diagnóstico Capilar Personalizado</div>
+    </div>
+
+    <div class="form-body">
+
+      <div class="form-intro-avatar">
+        <img src="jessica.jpg" alt="Jéssica" class="form-avatar-img"
+             onerror="this.outerHTML='<div style=\'width:52px;height:52px;border-radius:50%;background:var(--primary-xlight);display:flex;align-items:center;justify-content:center;font-size:1.4rem;\'>👩‍⚕️</div>'">
+        <div class="form-balloon">
+          Antes de começar, me diz seu nome para eu personalizar seu diagnóstico 😊
+        </div>
+      </div>
+
+      <h2 class="form-title">Quase lá!<br>Só mais dois dados.</h2>
+      <p class="form-subtitle">Assim eu consigo te chamar pelo nome e enviar seu diagnóstico direto no WhatsApp.</p>
+
+      <div class="form-group">
+        <label class="form-label" for="input-name">Seu primeiro nome</label>
+        <input
+          id="input-name"
+          class="form-input"
+          type="text"
+          placeholder="Ex: Carlos"
+          autocomplete="given-name"
+          inputmode="text"
+          oninput="validateForm()"
+        >
+        <div class="form-error-msg" id="error-name">Por favor, insira seu nome.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="input-phone">Seu WhatsApp (com DDD)</label>
+        <input
+          id="input-phone"
+          class="form-input"
+          type="tel"
+          placeholder="Ex: (31) 99999-9999"
+          autocomplete="tel"
+          inputmode="numeric"
+          oninput="maskPhone(this); validateForm()"
+        >
+        <div class="form-error-msg" id="error-phone">Por favor, insira um número válido.</div>
+      </div>
+
+      <div class="form-privacy">
+        <span class="form-privacy-icon">🔒</span>
+        <span>Seus dados são confidenciais e usados apenas para enviar seu diagnóstico. Não compartilhamos com terceiros.</span>
+      </div>
+
+    </div>
+
+    <div class="quiz-footer">
+      <button class="btn-next" id="btn-form-next" disabled onclick="goToQuiz()">
+        Iniciar meu diagnóstico →
+      </button>
+    </div>
+
+  </div><!-- /screen-form -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TELA 1..N — PERGUNTAS                     -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen">
+
+    <div class="brand-header" style="padding:16px 24px 12px;">
+      <div class="brand-name" style="font-size:1.1rem;">Jessica Mayara</div>
+      <div class="brand-tagline">Diagnóstico Capilar Gratuito</div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-meta">
+      <span class="progress-label" id="progress-label">Pergunta 1 de 8</span>
+      <span class="progress-pct" id="progress-pct">0% concluído</span>
+    </div>
+
+    <div class="question-container" id="question-container">
+      <!-- Renderizado via JS -->
+    </div>
+
+    <div class="quiz-footer" id="quiz-footer">
+      <button class="btn-next" id="btn-next" disabled onclick="nextQuestion()">
+        <span id="btn-next-text">Próxima →</span>
+      </button>
+    </div>
+
+  </div><!-- /screen-quiz -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TELA LOADING                              -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-spinner">
+      <div class="loading-icon">🧬</div>
+    </div>
+    <div class="loading-title">Analisando seu<br>perfil capilar…</div>
+    <div class="loading-subtitle">Aguarde enquanto montamos<br>seu diagnóstico personalizado</div>
+    <div class="loading-steps">
+      <div class="loading-step" id="step1">
+        <div class="step-dot"></div>
+        <span>Avaliando estágio de queda</span>
+      </div>
+      <div class="loading-step" id="step2">
+        <div class="step-dot"></div>
+        <span>Identificando condições associadas</span>
+      </div>
+      <div class="loading-step" id="step3">
+        <div class="step-dot"></div>
+        <span>Montando protocolo personalizado</span>
+      </div>
+      <div class="loading-step" id="step4">
+        <div class="step-dot"></div>
+        <span>Gerando seu diagnóstico</span>
+      </div>
+    </div>
+  </div><!-- /screen-loading -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TELA RESULTADO                            -->
+  <!-- ══════════════════════════════════════════ -->
+  <div id="screen-result" class="screen">
+
+    <div class="result-header">
+      <div class="result-avatar">
+        <!-- ⚠️ COLOQUE jessica.jpg no mesmo diretório -->
+        <img src="jessica.jpg" alt="Jessica Mayara" onerror="this.outerHTML='👩‍⚕️'">
+      </div>
+      <div class="result-badge">✦ Diagnóstico Pronto ✦</div>
+      <h2 class="result-profile-title" id="result-title">—</h2>
+      <p class="result-quote" id="result-quote">—</p>
+    </div>
+
+    <div class="result-cta">
+      <div class="urgency-strip">
+        <div class="urgency-icon">🌱</div>
+        <div class="urgency-text">
+          <strong>Parabéns por dar o primeiro passo para a sua transformação capilar.</strong><br>
+          Clique para começar a sua transformação essa semana!
+        </div>
+      </div>
+
+      <p class="before-after-title">Você está prestes a conquistar resultados assim como esses:</p>
+
+      <div class="before-after-grid">
+        <!-- ⚠️ Coloque antes-depois-1.jpg, antes-depois-2.jpg, antes-depois-3.jpg na pasta -->
+        <div class="before-after-card">
+          <img src="antes-depois-1.jpg" alt="Resultado 1"
+               onerror="this.parentElement.innerHTML='<div class=\'before-after-placeholder\'><span>📸</span>Envie antes-depois-1.jpg</div>'">
+        </div>
+        <div class="before-after-card">
+          <img src="antes-depois-2.jpg" alt="Resultado 2"
+               onerror="this.parentElement.innerHTML='<div class=\'before-after-placeholder\'><span>📸</span>Envie antes-depois-2.jpg</div>'">
+        </div>
+        <div class="before-after-card">
+          <img src="antes-depois-3.jpg" alt="Resultado 3"
+               onerror="this.parentElement.innerHTML='<div class=\'before-after-placeholder\'><span>📸</span>Envie antes-depois-3.jpg</div>'">
+        </div>
+      </div>
+
+      <a id="btn-whatsapp" class="btn-whatsapp" href="#" onclick="openWhatsApp(event)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Quero saber a melhor solução para mim!
+      </a>
+
+      <div class="result-footnote">
+        Suas respostas já foram enviadas para a Jéssica.<br>
+        A equipe da Jéssica está preparada para te atender e logo em seguida te encaminhar para ela! 🎯
+      </div>
+    </div>
+
+    <div class="global-footer">
+      Jessica Mayara · Biomédica Tricologista<br>
+      Vickcare · Águas Claras, Brasília - DF
+    </div>
+
+  </div><!-- /screen-result -->
+
+</div><!-- /app -->
+
+<script>
+/* ════════════════════════════════════════════════════
+   ⚙️  CONFIGURAÇÕES — EDITE AQUI
+════════════════════════════════════════════════════ */
+const CONFIG = {
+  // ⚠️ Cole aqui a URL do Google Apps Script Web App (passo 2 do deploy)
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/SEU_ID_AQUI/exec',
+
+  // ⚠️ Número do WhatsApp com DDI+DDD, sem espaços ou símbolos
+  WHATSAPP_NUMBER: '5531971151972',
+
+  // Mensagem enviada pelo lead no WhatsApp (NÃO contém as respostas)
+  WHATSAPP_MESSAGE: 'Olá. Acabei de responder o quiz sobre queda de cabelo e gostaria de saber mais sobre a terapia capilar.',
+};
+
+/* ════════════════════════════════════════════════════
+   📋  PERGUNTAS DO QUIZ
+════════════════════════════════════════════════════ */
+const QUESTIONS = [
+  {
+    id: 'pergunta_1',
+    category: 'Estágio Atual',
+    icon: '🔍',
+    text: 'Como você descreveria sua queda de cabelo hoje?',
+    hint: null,
+    multiSelect: false,
+    options: [
+      { letter: 'A', emoji: '🌱', text: 'Cabelo está mais fino, mas sem falhas visíveis' },
+      { letter: 'B', emoji: '📉', text: 'Entradas começando a aparecer' },
+      { letter: 'C', emoji: '⚠️', text: 'Calvície moderada (entradas avançadas ou coroa)' },
+      { letter: 'D', emoji: '🚨', text: 'Calvície avançada (grande área sem cabelo)' },
+    ],
+  },
+  {
+    id: 'pergunta_2',
+    category: 'Escala de Calvície',
+    icon: '📊',
+    text: 'Qual desses níveis de calvície mais se assemelha ao seu?',
+    hint: null,
+    multiSelect: false,
+    imageOptions: true,
+    // ⚠️ Coloque calvicie-1.jpg até calvicie-7.jpg no mesmo diretório
+    options: [
+      { letter: 'A', img: 'calvicie-1.jpg', text: 'Nível 1 — Sem calvície visível' },
+      { letter: 'B', img: 'calvicie-2.jpg', text: 'Nível 2 — Entradas leves' },
+      { letter: 'C', img: 'calvicie-3.jpg', text: 'Nível 3 — Entradas moderadas' },
+      { letter: 'D', img: 'calvicie-4.jpg', text: 'Nível 4 — Entradas avançadas' },
+      { letter: 'E', img: 'calvicie-5.jpg', text: 'Nível 5 — Coroa com falhas' },
+      { letter: 'F', img: 'calvicie-6.jpg', text: 'Nível 6 — Grande área sem cabelo' },
+      { letter: 'G', img: 'calvicie-7.jpg', text: 'Nível 7 — Calvície extensa' },
+    ],
+  },
+  {
+    id: 'pergunta_3',
+    category: 'Tempo de Queda',
+    icon: '⏱',
+    text: 'Há quanto tempo você está lidando com a queda de cabelo?',
+    hint: null,
+    multiSelect: false,
+    options: [
+      { letter: 'A', emoji: '🆕', text: 'Menos de 6 meses (queda recente)' },
+      { letter: 'B', emoji: '📅', text: 'Entre 6 meses e 2 anos' },
+      { letter: 'C', emoji: '🗓️', text: 'Entre 2 e 5 anos' },
+      { letter: 'D', emoji: '⏳', text: 'Mais de 5 anos' },
+    ],
+  },
+  {
+    id: 'pergunta_4',
+    category: 'Tratamentos Anteriores',
+    icon: '💊',
+    text: 'O que você já tentou para tratar a queda de cabelo?',
+    hint: 'Pode marcar mais de uma opção',
+    multiSelect: true,
+    options: [
+      { letter: 'A', emoji: '🧴', text: 'Shampoos e suplementos anticaída' },
+      { letter: 'B', emoji: '💧', text: 'Minoxidil (Kirkland, Rogaine, etc.)' },
+      { letter: 'C', emoji: '🏥', text: 'Consulta com dermatologista / medicamentos' },
+      { letter: 'D', emoji: '🚫', text: 'Ainda não tentei nada' },
+    ],
+  },
+  {
+    id: 'pergunta_5',
+    category: 'Motivação',
+    icon: '🎯',
+    text: 'O que te motivou a buscar um tratamento agora?',
+    hint: null,
+    multiSelect: false,
+    options: [
+      { letter: 'A', emoji: '💪', text: 'Autoestima e confiança no dia a dia' },
+      { letter: 'B', emoji: '🎉', text: 'Evento importante se aproximando (casamento, formatura, viagem)' },
+      { letter: 'C', emoji: '💬', text: 'Alguém próximo comentou sobre a queda' },
+      { letter: 'D', emoji: '😟', text: 'A queda piorou recentemente e me preocupei' },
+    ],
+  },
+  {
+    id: 'pergunta_6',
+    category: 'Disponibilidade',
+    icon: '📅',
+    text: 'Com qual frequência você conseguiria comparecer às sessões?',
+    hint: null,
+    multiSelect: false,
+    options: [
+      { letter: 'A', emoji: '🔥', text: 'Semanalmente (estou comprometido com o resultado)' },
+      { letter: 'B', emoji: '📆', text: 'A cada 15 dias' },
+      { letter: 'C', emoji: '🗓️', text: 'Uma vez por mês' },
+      { letter: 'D', emoji: '🔄', text: 'Tenho dificuldade de agenda — preciso de flexibilidade' },
+    ],
+  },
+  {
+    id: 'pergunta_7',
+    category: 'Couro Cabeludo',
+    icon: '🧴',
+    text: 'Como você descreveria seu couro cabeludo atualmente?',
+    hint: null,
+    multiSelect: false,
+    options: [
+      { letter: 'A', emoji: '✅', text: 'Normal, sem queixas além da queda' },
+      { letter: 'B', emoji: '💦', text: 'Oleoso com frequência' },
+      { letter: 'C', emoji: '❄️', text: 'Tenho caspa ou descamação' },
+      { letter: 'D', emoji: '🔴', text: 'Sinto coceira ou irritação com frequência' },
+    ],
+  },
+  {
+    id: 'pergunta_8',
+    category: 'Expectativa',
+    icon: '⚡',
+    text: 'Qual resultado você espera alcançar com o tratamento?',
+    hint: null,
+    multiSelect: false,
+    options: [
+      { letter: 'A', emoji: '🛡️', text: 'Parar a queda e evitar que piore' },
+      { letter: 'B', emoji: '💪', text: 'Recuperar volume e densidade nos fios' },
+      { letter: 'C', emoji: '🌱', text: 'Estimular o crescimento em áreas com falhas' },
+      { letter: 'D', emoji: '✨', text: 'Ter cabelo mais saudável e vigoroso no geral' },
+    ],
+  },
+];
+
+/* ════════════════════════════════════════════════════
+   🎭  PERFIS DE RESULTADO
+   Baseados nas respostas da pergunta 1 (estágio) e 3 (tempo)
+════════════════════════════════════════════════════ */
+function getProfile(answers) {
+  const estagio = answers['pergunta_1'] || '';
+  const tempo   = answers['pergunta_3'] || '';
+  const tentou  = answers['pergunta_4'] || '';
+
+  // Perfil 1 — Prevenção & Fortalecimento
+  if (estagio.startsWith('A') || (estagio.startsWith('B') && tempo.startsWith('A'))) {
+    return {
+      title: 'Perfil Prevenção & Fortalecimento',
+      quote: 'Ótima notícia: você está num estágio inicial, onde o tratamento é mais eficaz e os resultados chegam mais rápido. Agir agora é a melhor decisão que você pode tomar!',
+      badge: 'Potencial Alto de Resposta',
+    };
+  }
+
+  // Perfil 2 — Recuperação Ativa
+  if (estagio.startsWith('B') || estagio.startsWith('C')) {
+    return {
+      title: 'Perfil Recuperação Ativa',
+      quote: 'Você já percebeu mudanças visíveis e quer reverter esse quadro. A mesoterapia capilar é indicada exatamente para o seu estágio — com protocolo certo, os resultados são expressivos.',
+      badge: 'Protocolo Personalizado Disponível',
+    };
+  }
+
+  // Perfil 3 — Tratamento Intensivo
+  if (estagio.startsWith('D')) {
+    return {
+      title: 'Perfil Tratamento Intensivo',
+      quote: 'Calvícies avançadas exigem um protocolo estruturado e consistência. A Jéssica vai te explicar com honestidade o que é possível alcançar — e o primeiro passo começa com essa conversa.',
+      badge: 'Avaliação Presencial Recomendada',
+    };
+  }
+
+  // Fallback — Diagnóstico Geral
+  return {
+    title: 'Perfil Saúde Capilar',
+    quote: 'Com base nas suas respostas, a Jéssica vai montar um protocolo sob medida para o seu caso. O próximo passo é uma conversa rápida para alinhar expectativas e iniciar o tratamento.',
+    badge: 'Diagnóstico Personalizado',
+  };
+}
+
+/* ════════════════════════════════════════════════════
+   🔧  ESTADO DO APP
+════════════════════════════════════════════════════ */
+let currentQuestion = 0;
+let answers = {};        // { pergunta_1: 'texto', pergunta_4: ['texto1','texto2'], ... }
+let selectedIndexes = [];// índices selecionados na pergunta atual
+let leadName  = '';
+let leadPhone = '';
+
+/* ════════════════════════════════════════════════════
+   🚀  FUNÇÕES PRINCIPAIS
+════════════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+  // Pequeno delay para a animação funcionar
+  requestAnimationFrame(() => el.classList.add('active'));
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  showScreen('screen-form');
+}
+
+function maskPhone(input) {
+  let v = input.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length <= 10) {
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+  } else {
+    v = v.replace(/^(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+  }
+  input.value = v;
+}
+
+function validateForm() {
+  const name  = document.getElementById('input-name').value.trim();
+  const phone = document.getElementById('input-phone').value.replace(/\D/g, '');
+  const valid = name.length >= 2 && phone.length >= 10;
+  document.getElementById('btn-form-next').disabled = !valid;
+}
+
+function goToQuiz() {
+  const nameEl  = document.getElementById('input-name');
+  const phoneEl = document.getElementById('input-phone');
+  const name    = nameEl.value.trim();
+  const phone   = phoneEl.value.replace(/\D/g, '');
+
+  let ok = true;
+  if (name.length < 2) {
+    nameEl.classList.add('error');
+    document.getElementById('error-name').classList.add('visible');
+    ok = false;
+  } else {
+    nameEl.classList.remove('error');
+    document.getElementById('error-name').classList.remove('visible');
+  }
+  if (phone.length < 10) {
+    phoneEl.classList.add('error');
+    document.getElementById('error-phone').classList.add('visible');
+    ok = false;
+  } else {
+    phoneEl.classList.remove('error');
+    document.getElementById('error-phone').classList.remove('visible');
+  }
+  if (!ok) return;
+
+  leadName  = name;
+  leadPhone = phoneEl.value.trim();
+
+  currentQuestion = 0;
+  answers = {};
+  selectedIndexes = [];
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQuestion];
+  const container = document.getElementById('question-container');
+  selectedIndexes = [];
+
+  // Atualiza progresso
+  const pct = Math.round((currentQuestion / QUESTIONS.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `Pergunta ${currentQuestion + 1} de ${QUESTIONS.length}`;
+  document.getElementById('progress-pct').textContent = pct + '% concluído';
+
+  // Botão próxima — esconde nas perguntas com auto-avanço
+  const btnNext = document.getElementById('btn-next');
+  btnNext.disabled = true;
+  const isLast = currentQuestion === QUESTIONS.length - 1;
+  const isAutoAdvance = AUTO_ADVANCE.includes(currentQuestion) && !QUESTIONS[currentQuestion].multiSelect;
+  document.getElementById('quiz-footer').style.display = isAutoAdvance ? 'none' : 'block';
+  document.getElementById('btn-next-text').textContent = isLast ? 'Ver meu diagnóstico ✓' : 'Próxima →';
+
+  // Monta HTML da pergunta
+  let optionsHTML = '';
+
+  if (q.imageOptions) {
+    // Grade 2 colunas para opções com imagem
+    optionsHTML = `<div class="options-grid two-col">`;
+    q.options.forEach((opt, i) => {
+      optionsHTML += `
+        <div class="option-card has-img" data-index="${i}" onclick="selectOption(${i})">
+          <div class="option-img-wrap">
+            <img src="${opt.img}" alt="Nível ${opt.letter}"
+                 onerror="this.parentElement.innerHTML='<div class=\\'option-img-placeholder\\'>📸 ${opt.img}<br><small>Coloque a imagem no diretório</small></div>'">
+          </div>
+          <div class="option-text-wrap">
+            <div class="option-letter">${opt.letter}</div>
+            <div class="option-text">${opt.text}</div>
+          </div>
+          <div class="option-check" id="check-${i}"></div>
+        </div>`;
+    });
+    optionsHTML += `</div>`;
+  } else {
+    optionsHTML = `<div class="options-grid">`;
+    q.options.forEach((opt, i) => {
+      optionsHTML += `
+        <div class="option-card" data-index="${i}" onclick="selectOption(${i})">
+          <div class="option-emoji">${opt.emoji}</div>
+          <div class="option-text-wrap">
+            <div class="option-letter">${opt.letter}</div>
+            <div class="option-text">${opt.text}</div>
+          </div>
+          <div class="option-check" id="check-${i}"></div>
+        </div>`;
+    });
+    optionsHTML += `</div>`;
+  }
+
+  container.innerHTML = `
+    <span class="question-icon">${q.icon}</span>
+    <div class="question-category">${q.category}</div>
+    <h2 class="question-text">${q.text}</h2>
+    ${q.hint ? `<div class="question-hint"><span class="multi-badge">✦ ${q.hint}</span></div>` : ''}
+    ${optionsHTML}
+  `;
+}
+
+// Perguntas com auto-avanço ao clicar (índices 0-based: 1 = Q2, 6 = Q7)
+const AUTO_ADVANCE = [1, 2, 3, 4, 5, 6];
+
+function selectOption(index) {
+  const q = QUESTIONS[currentQuestion];
+  const cards = document.querySelectorAll('.option-card');
+
+  if (q.multiSelect) {
+    const pos = selectedIndexes.indexOf(index);
+    if (pos > -1) {
+      selectedIndexes.splice(pos, 1);
+    } else {
+      if (index === 3) selectedIndexes = [];
+      else selectedIndexes = selectedIndexes.filter(i => i !== 3);
+      selectedIndexes.push(index);
+    }
+  } else {
+    selectedIndexes = [index];
+  }
+
+  // Atualiza visual dos cards
+  cards.forEach((card, i) => {
+    const isSelected = selectedIndexes.includes(i);
+    card.classList.toggle('selected', isSelected);
+    const check = document.getElementById('check-' + i);
+    if (check) check.textContent = isSelected ? '✓' : '';
+  });
+
+  document.getElementById('btn-next').disabled = selectedIndexes.length === 0;
+
+  // Auto-avanço: aguarda 350ms para mostrar o highlight antes de avançar
+  if (AUTO_ADVANCE.includes(currentQuestion) && !q.multiSelect) {
+    setTimeout(() => nextQuestion(), 350);
+  }
+}
+
+function nextQuestion() {
+  if (selectedIndexes.length === 0) return;
+
+  const q = QUESTIONS[currentQuestion];
+
+  // Salva resposta
+  if (q.multiSelect) {
+    answers[q.id] = selectedIndexes.map(i => q.options[i].text).join(' | ');
+  } else {
+    const opt = q.options[selectedIndexes[0]];
+    answers[q.id] = `${opt.letter}) ${opt.text}`;
+  }
+
+  if (currentQuestion < QUESTIONS.length - 1) {
+    currentQuestion++;
+    renderQuestion();
+    window.scrollTo(0, 0);
+  } else {
+    showLoading();
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   ⏳  LOADING E RESULTADO
+════════════════════════════════════════════════════ */
+function showLoading() {
+  showScreen('screen-loading');
+
+  const steps = ['step1', 'step2', 'step3', 'step4'];
+  const delays = [300, 800, 1400, 1900];
+
+  steps.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el.classList.add('visible');
+      if (i > 0) {
+        const prev = document.getElementById(steps[i - 1]);
+        prev.classList.add('done');
+        prev.querySelector('.step-dot') && (prev.querySelector('span').textContent = '✓ ' + prev.querySelector('span').textContent.replace('✓ ', ''));
+      }
+    }, delays[i]);
+  });
+
+  // Vai para resultado após 2.8s
+  setTimeout(() => {
+    document.getElementById(steps[steps.length - 1]).classList.add('done');
+    setTimeout(() => showResult(), 400);
+  }, 2500);
+}
+
+function showResult() {
+  const profile = getProfile(answers);
+
+  document.getElementById('result-title').textContent = profile.title;
+  document.getElementById('result-quote').textContent = profile.quote;
+
+  // Monta link WhatsApp
+  const msg = encodeURIComponent(CONFIG.WHATSAPP_MESSAGE);
+  document.getElementById('btn-whatsapp').href =
+    `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${msg}`;
+
+  showScreen('screen-result');
+
+  // Envia dados ao Google Sheets (background, não bloqueia)
+  sendToSheets(profile.title);
+}
+
+/* ════════════════════════════════════════════════════
+   📊  INTEGRAÇÃO GOOGLE SHEETS
+════════════════════════════════════════════════════ */
+function sendToSheets(perfil) {
+  // Gera timestamp local no formato DD/MM/AAAA HH:mm
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const timestamp = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  const payload = {
+    timestamp,
+    nome:    leadName,
+    telefone: leadPhone,
+    perfil,
+    respostas: answers,
+  };
+
+  // ⚠️ Se APPS_SCRIPT_URL ainda for o placeholder, não tenta enviar
+  if (CONFIG.APPS_SCRIPT_URL.includes('SEU_ID_AQUI')) {
+    console.warn('[Quiz] Configure APPS_SCRIPT_URL para enviar ao Google Sheets.');
+    return;
+  }
+
+  fetch(CONFIG.APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors', // Apps Script exige no-cors
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {
+    // Silencioso — não bloqueia o fluxo do usuário
+    console.warn('[Quiz] Falha ao enviar para o Sheets. Verifique a URL do Apps Script.');
+  });
+}
+
+/* ════════════════════════════════════════════════════
+   💬  ABRE WHATSAPP
+════════════════════════════════════════════════════ */
+function openWhatsApp(event) {
+  event.preventDefault();
+  const href = document.getElementById('btn-whatsapp').href;
+  // Pequeno delay para garantir que o fetch já foi disparado
+  setTimeout(() => window.open(href, '_blank'), 150);
+}
+
+/* ════════════════════════════════════════════════════
+   🎬  INICIALIZAÇÃO
+════════════════════════════════════════════════════ */
+// Garante que apenas a tela de intro seja exibida no carregamento
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+  document.getElementById('screen-intro').style.display = 'flex';
+  document.getElementById('screen-intro').classList.add('active');
+});
+</script>
+</body>
+</html>
